@@ -96,3 +96,9 @@ Obre una navegador a la teva IP, que ha d'estar a la mateixa xarxa on és connec
 El client arduino fa una petició a l'script `led.php` que retorna `[ON]` o `[OFF]`:
 
 ![Client arduino de l'exemple 2](./img/exemple2-arduino.jpg)
+
+### Exemple 3 de servidor HTTP
+
+S'inicia un servidor al port 80 i quan s'accedeix als paths `/on` i `/off` s'encen i s'apaga un LED.
+
+![Exemple 3 funcionant](./img/exemple3.jpg)
