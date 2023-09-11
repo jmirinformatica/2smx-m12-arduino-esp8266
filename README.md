@@ -75,10 +75,24 @@ La foto següent mostra l'Arduino UNO i el ESP8266 conectats:
 
 ## Codi d'exemple
 
-A la carpeta d'sketch hi ha el codi d'exemple. Es fa servir [ArduinoESPAT](https://github.com/nyampass/ArduinoESPAT-Library):
+A la carpeta d'sketch hi ha el codi d'exemple. A tots els exemples es fa servir una versió modificada de [ArduinoESPAT](https://github.com/nyampass/ArduinoESPAT-Library).
 
 ### Exemple 1 de connexió WIFI
 
 Es connecta a la xarxa WIFI i mostra el contingut de la pàgina http://captive.apple.com/.
 
 ![Sortida de l'exemple 1](./img/exemple1.jpg)
+
+### Exemple 2 de client HTTP
+
+A la [carpeta exemples/2](./exemples/2) inicia el servidor amb docker compose:
+
+    docker compose up
+
+Obre una navegador a la teva IP, que ha d'estar a la mateixa xarxa on és connectarà l'Arduino, i el port 8888:
+
+![Servidor de l'exemple 2](./img/exemple2-servidor.jpg)
+
+El client arduino fa una petició a l'script `led.php` que retorna `[ON]` o `[OFF]`:
+
+![Client arduino de l'exemple 2](./img/exemple2-arduino.jpg)

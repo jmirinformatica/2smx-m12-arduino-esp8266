@@ -1,9 +1,22 @@
 #include "ArduinoESPAT.h"
 
-ESPAT::ESPAT(String ssid, String pass)
+ESPAT::ESPAT(uint8_t tx, uint8_t rz, String ssid, String pass)
 {
   SSID = ssid;
   PASS = pass;
+  ss = new SoftwareSerial(tx, rz);
+}
+
+void debug(String line) {
+  #if DEBUG == true
+  Serial.println(line);
+  #endif
+}
+
+void debug(const char line[]) {
+  #if DEBUG == true
+  Serial.println(line);
+  #endif
 }
 
 void ESPAT::atdelay(int limit)
@@ -30,7 +43,7 @@ bool ESPAT::waitResp(uint8_t limit)
     atdelay(500);
     String data = ss->readString();
 
-    Serial.println(data);
+    debug(data);
 
     if (cnt > limit)
     {
@@ -133,13 +146,13 @@ bool ESPAT::tryConnectAP()
   }
 }
 
-String ESPAT::get(String host, String path, int port = 80, bool showHeader = false)
+String ESPAT::get(String host, String path, int port = 80, bool hideHeader = true)
 {
   ss->listen();
   String result;
   uint16_t cnt = 0;
   bool flag = false;
-  bool skipCheck = !showHeader;
+  bool skipCheck = !hideHeader;
 
   if (!INIT)
     return "";
@@ -150,18 +163,18 @@ String ESPAT::get(String host, String path, int port = 80, bool showHeader = fal
     // atdelay(4000);
     if (waitResp(5))
     {
-      // Serial.println("TCP OK");
+      // debug("TCP OK");
       ss->println("AT+CIPMODE=1");
       // atdelay(500);
       if (waitResp(5))
       {
-        // Serial.println("MODE OK");
+        // debug("MODE OK");
         ss->println("AT+CIPSEND");
         // atdelay(1000);
         if (waitResp(5))
         {
-          // Serial.println("SEND READY");
-          ss->println("GET " + path + " HTTP/1.0\nHOST:" + host + "\n");
+          // debug("SEND READY");
+          ss->println("GET " + path + " HTTP/1.1\r\nHOST:" + host + "\r\nConnection: close\r\n");
           atdelay(4000);
           while (ss->available() && cnt < RESP_BUFF)
           {
@@ -199,7 +212,9 @@ String ESPAT::get(String host, String path, int port = 80, bool showHeader = fal
           ss->println("AT+CIPCLOSE");
           atdelay(1000);
           ss->readString(); // reset buff
-          // Serial.println(ss->readString());
+          // debug(ss->readString());
+
+          result.trim();
           return result;
         }
         else
@@ -223,76 +238,7 @@ String ESPAT::get(String host, String path, int port = 80, bool showHeader = fal
   }
 }
 
-bool ESPAT::advGet(String host, String path, int port = 80, void (*ptf)(char) = nullptr)
-{ // host path port callback || host path callback
-  ss->listen();
 
-  if (!INIT)
-    return "";
-
-  if (clientIP() != "")
-  {
-    ss->println("AT+CIPSTART=\"TCP\",\"" + host + "\"," + String(port));
-    // atdelay(4000);
-    if (waitResp(5))
-    {
-      // Serial.println("TCP OK");
-      ss->println("AT+CIPMODE=1");
-      // atdelay(500);
-      if (waitResp(5))
-      {
-        // Serial.println("MODE OK");
-        ss->println("AT+CIPSEND");
-        // atdelay(1000);
-        if (waitResp(5))
-        {
-          // Serial.println("SEND READY");
-          ss->println("GET " + path + " HTTP/1.0\nHOST:" + host + "\n");
-          atdelay(4000);
-          while (ss->available())
-          {
-            char readData = (char)ss->read();
-
-            if (ptf == nullptr)
-            {
-              Serial.print(readData);
-            }
-            else
-            {
-              ptf(readData);
-            }
-            // Serial.print(readData);
-            atdelay(3000);
-          }
-          ss->print("+++");
-          atdelay(1000);
-          ss->readString(); // reset buff
-          ss->println("AT+CIPCLOSE");
-          atdelay(1000);
-          ss->readString(); // reset buff
-          // Serial.println(ss->readString());
-          return true;
-        }
-        else
-        {
-          return false;
-        }
-      }
-      else
-      {
-        return false;
-      }
-    }
-    else
-    {
-      return false;
-    }
-  }
-  else
-  {
-    return false;
-  }
-}
 
 String ESPAT::clientIP()
 {
@@ -379,7 +325,7 @@ bool ESPAT::openServer(int port, void (*opened)())
             line += c;
             if (c == '\n')
             {
-              // Serial.println(line);
+              // debug(line);
               if (line.indexOf("GET") >= 0 && line.indexOf("+IPD,") == 0)
               {
                 String path = "";
@@ -409,10 +355,10 @@ bool ESPAT::openServer(int port, void (*opened)())
                   }
                 }
 
-                Serial.println(path);
-                Serial.println(id);
-                Serial.println(query[0]);
-                Serial.println(query[1]);
+                debug(path);
+                debug(id);
+                debug(query[0]);
+                debug(query[1]);
 
                 for (int i = 0; i < GetRecieveEventsNext; i++)
                 {

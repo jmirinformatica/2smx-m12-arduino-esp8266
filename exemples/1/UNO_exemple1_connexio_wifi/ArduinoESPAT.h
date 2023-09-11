@@ -7,18 +7,18 @@
 #define NOIP "0.0.0.0"
 #define GET_RECV_EVENTS_LIMIT 10
 #define RESP_BUFF 1024
+#define DEGUG false
 
 class SoftwareSerial;
 class ESPAT
 {
 public:
-  ESPAT(String ssid, String pass);
+  ESPAT(uint8_t tx, uint8_t rz, String ssid, String pass);
   bool begin();
   bool checkAT();
   bool changeMode(uint8_t mode);
   bool tryConnectAP();
-  String get(String host, String path, int port = 80, bool showHeader = false);
-  bool advGet(String host, String path, int port = 80, void (*ptf)(char) = nullptr);
+  String get(String host, String path, int port = 80, bool hideHeader = true);
   bool openServer(int port, void (*opened)() = nullptr);
   String clientIP();
   String sendComm(String comm, int wait = 2000);
@@ -46,7 +46,7 @@ private:
   };
   struct GetRecieveEvent GetRecieveEvents[GET_RECV_EVENTS_LIMIT];
 
-  SoftwareSerial *ss = new SoftwareSerial(2, 3);
+  SoftwareSerial *ss; //new SoftwareSerial(2, 3);
 };
 
 #endif
