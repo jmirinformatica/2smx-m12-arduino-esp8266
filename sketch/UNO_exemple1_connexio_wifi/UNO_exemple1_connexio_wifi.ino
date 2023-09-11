@@ -1,5 +1,3 @@
-// https://github.com/nyampass/ArduinoESPAT-Library
-
 #include "ArduinoESPAT.h"
 
 ESPAT espat("SSID", "password"); 
@@ -27,7 +25,7 @@ void setup(){
 
   Serial.println(espat.clientIP());
 
-  Serial.println(espat.get("hogehoge.com", "/", 80));
+  Serial.println(espat.get("captive.apple.com", "/", 80));
   Serial.println("Finished");
 }
 
