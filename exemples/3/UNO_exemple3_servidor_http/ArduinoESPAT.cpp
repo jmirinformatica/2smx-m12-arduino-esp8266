@@ -332,9 +332,8 @@ bool ESPAT::openServer(int port, void (*opened)())
                 String queryStr = "";
                 String query[2] = {"", ""};
                 String response = "";
-                String html = "404";
                 int8_t id = 0;
-                void (*callback)(String, String) = nullptr;
+                String (*callback)(String, String) = nullptr;
 
                 path = line.substring(line.indexOf("GET") + 4);
                 path = path.substring(0, path.indexOf("HTTP/1") - 1);
@@ -365,10 +364,13 @@ bool ESPAT::openServer(int port, void (*opened)())
                   if (GetRecieveEvents[i].path == path)
                   {
                     callback = GetRecieveEvents[i].access;
-                    html = GetRecieveEvents[i].html;
                     break;
                   }
                 }
+
+                String html = "404";
+                if (callback != nullptr)
+                  html = callback(query[0], query[1]);
 
                 response = "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nKeep-Alive: timeout=15, max=100\r\n\r\n" + html;
                 ss->listen();
@@ -378,8 +380,7 @@ bool ESPAT::openServer(int port, void (*opened)())
                 delay(500);
                 ss->println("AT+CIPCLOSE=" + String(id));
 
-                if (callback != nullptr)
-                  callback(query[0], query[1]);
+
               }
               line = "";
             }
@@ -409,7 +410,7 @@ void ESPAT::breakServer()
   }
 }
 
-void ESPAT::setGetRecieveEvents(String path, String html, void (*access)())
+void ESPAT::addGetCallback(String path, String (*access)())
 {
   struct GetRecieveEvent event;
 
@@ -419,7 +420,6 @@ void ESPAT::setGetRecieveEvents(String path, String html, void (*access)())
   {
     event.access = access;
     event.path = path;
-    event.html = html;
     GetRecieveEvents[GetRecieveEventsNext] = event;
     GetRecieveEventsNext += 1;
   }

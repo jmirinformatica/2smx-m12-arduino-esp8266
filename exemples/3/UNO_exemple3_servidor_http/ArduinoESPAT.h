@@ -22,7 +22,8 @@ public:
   bool openServer(int port, void (*opened)() = nullptr);
   String clientIP();
   String sendComm(String comm, int wait = 2000);
-  void setGetRecieveEvents(String path, String html, void (*access)());
+  // void setGetRecieveEvents(String path, String html, void (*access)());
+  void addGetCallback(String path, String (*access)());
   void breakServer();
 
 private:
@@ -40,9 +41,8 @@ private:
   uint8_t GetRecieveEventsNext = 0;
   struct GetRecieveEvent
   {
-    void (*access)();
+    String (*access)();
     String path;
-    String html;
   };
   struct GetRecieveEvent GetRecieveEvents[GET_RECV_EVENTS_LIMIT];
 
